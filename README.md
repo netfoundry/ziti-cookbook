@@ -48,11 +48,11 @@ For this recipe, we've decided to use NetFoundry's Free Teams offering. This sam
 
 Common redis architecture within AWS:
 
-![AWSSidecarSolution](Images/aws_sidecar_solution.png)
+![AWSSidecarSolution](misc/images/aws_sidecar_solution.png)
 
 SimpleSidecarSolution:
 
-![NetfoundrySidecarSolution](Images/netfoundry_simple_sidecar_solution.png)
+![NetfoundrySidecarSolution](misc/images/netfoundry_simple_sidecar_solution.png)
 
 [This is what I needed! Let's start cooking with Ziti!](SimpleSidecarSolution/README.md)
 
