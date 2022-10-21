@@ -1,0 +1,1 @@
+// Secrets Manager, delpoy locally stored .json object 
