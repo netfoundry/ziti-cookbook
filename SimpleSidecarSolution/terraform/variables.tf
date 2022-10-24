@@ -22,3 +22,12 @@ variable "api_memory" {
     description = "CPU and Memory must line up with Fargate requirements. Suggested 1-4GB to match 512 (.5vCPU) memory or 2-8GB to match 1024 (1 vCPU) memory here."
     default = "1 GB"
 }
+
+variable "aws_account" {
+  description = "Account used for AWS Infrastructure"
+}
+
+variable "token_secret_name"{
+  description = "Name of the identity token secret in Secrets Manager and ECS Task Defintiion. If conflicting with existing secret, change name here."
+  default = "ZITI_ENROLLED_JSON"
+}

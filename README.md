@@ -1,7 +1,7 @@
 # Ziti Cookbook
 ## _Recipes to make Ziti fit your palete_
 
-[![N|Solid](https://cldup.com/dTxpPi9lDf.thumb.png)](https://netfoundry.io/)
+[![OpenZiti](misc/images/bakedwithopenziti.png)](https://github.com/openziti)
 
 ![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)
 
