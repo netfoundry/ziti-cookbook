@@ -36,8 +36,8 @@ resource "aws_ecs_task_definition" "dark-api" {
       essential = true
       secrets   = [
       {
-        valueFrom = "arn:aws:secretsmanager:us-east-1:763787222038:secret:ZITI_ENROLLED_JSON",
-        name      = "ZITI_IDENTITY_JSON"
+        valueFrom = "arn:aws:secretsmanager:${var.region}:${var.aws_account}:secret:${var.token_secret_name}",
+        name      = "ZITI_IDENTITY_JSON" //this name is for local environment variable use and does not need to change
       }
     ]
     logConfiguration = {

@@ -53,4 +53,5 @@ Thumbs.db
 *terraform.*
 
 # Ignoring identity tokens
-SimpleSidecarSolution/identity_token_goes_here/*
+SimpleSidecarSolution/identity_token_goes_here/*.jwt
+SimpleSidecarSolution/identity_token_goes_here/*.json
