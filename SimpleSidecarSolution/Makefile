@@ -7,10 +7,10 @@ enroll:
     openziti/quickstart \
     /openziti/ziti-bin/ziti edge enroll /mnt/dark_api_endpoint.jwt
 
-tf:
+terraform:
 	terraform -chdir=./terraform init
-	terraform -chdir=./terraform apply  -var="aws_account=763787222038" -var="token_secret_name=TEST_TOKEN2"
-#TODO: remove account from here
+	terraform -chdir=./terraform apply
+
 clean:
 	rm identity_token_goes_here/dark_api_endpoint.json
 
