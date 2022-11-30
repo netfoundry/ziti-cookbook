@@ -77,7 +77,21 @@ Once you've created an account at NetFoundry.io, you'll need to create a [Ziti E
 
 In order for **Endpoint** to be enrolled into your OpenZiti fabric, you will need to enroll the .jwt token. This will return a .json token that contains mTLS certs that we will store as a secret in **AWS Secrets Manager** and will be enrolled to the fabric [Controller](###Controller).
 
-To enroll your dark_api_endpoint.jwt and get dark_api_endpoint.json as a return, run ```make enroll```. Now you should have ./identity_token_goes_here/dark_api_endpoint.json. If this JSON object is correctly generated, you've enrolled your **Endpoint** correctly (see image below)! Next we'll run the Terraform and place that secret in **AWS Secrets Manager** ```make tf```. This secret should already be included in the .gitignore, but now would be a good time to double check that you are not committing these certificates to your repository. In fact, once they are stored as a secret in AWS and encrypted with KMS, it is best practice to delete the JSON object locally ```make clean```. If you'd like to run all of these steps in one clean command, simply run ```make``` and it will chain all three of these commands along with the ```make versions``` command mentioned earlier to enroll your token with the controller, deploy the secret to AWS, deploy a new task with the new secret, and remove the secret from your file system.
+To enroll your dark_api_endpoint.jwt and get dark_api_endpoint.json as a return, run ```make enroll```. Now you should have ./identity_token_goes_here/dark_api_endpoint.json. If this JSON object is correctly generated, you've enrolled your **Endpoint** correctly (see image below)! 
+
+## Deploy Your API
+
+Now that we have enrolled our Identity with your OpenZiti fabric, we can go ahead and deploy our Terraform. The Terraform configuration included in this project will create the following resources (and their associated resources):
+
+- VPC
+- 2 Subnets
+- IAM Roles required for ECS
+- ECS Cluster and Service
+- ECS Task including OpenZiti Tunneller (sidecar) and the demo Flask API
+- Security Group with no ingress
+- Secrets Manager Secret containing your enrollment certs
+
+Next we'll run the Terraform and place that secret in **AWS Secrets Manager** run ```Terraform Apply``` (or ```make terraform```). This secret should already be included in the .gitignore, but now would be a good time to double check that you are not committing these certificates to your repository. In fact, once they are stored as a secret in AWS and encrypted with KMS, it is best practice to delete the JSON object locally. ```make clean``` will remove these files for you. If you'd like to run all of these steps in one clean command, simply run ```make``` and it will chain all three of these commands along with the ```make versions``` command mentioned earlier to enroll your token with the controller, deploy the secret to AWS, deploy a new task with the new secret, and remove the secret from your file system.
 
 -----
 
@@ -141,6 +155,28 @@ And our ZDE should show the expected connection:
 ![zdeConnected](../misc/images/zde_connected.png)
 
 Now let's try and connect to our API! 
+
+In your terminal, postman, or browser simply connect to [dark.api:80 ](http://dark.api/) and you should get a return of "Hello World (Python)! (up 2:15:29)" based on how long your API has been running.
+
+## A Few Good Tests
+
+In order to ensure that traffic is flowing as we expected and is truly dark, there are a few quick things we can check.
+
+First, let's see our traffic!
+
+In Fargate, you can look at your cloudwatch logs (log group /ecs/fargate_log_group/dark_api/) and for your ziti-tunneller you should see:
+ ```
+ INFO tunnel-cbs:ziti_hosting.c:611 on_hosted_client_connect() hosted_service[dark_api_demo_service], client[local_desktop_endpoint] dst_addr[tcp:dark.api:80]: incoming connection
+ ```
+ Here we can see the name of the service, the client connection, and the address it connected over. In your app logs, you should see:
+ ```
+ 127.0.0.1 - - [24/Oct/2022 19:18:49] "GET / HTTP/1.1" 200 -
+ ```
+ This is our incoming GET request from our local machine.
+
+ If we go to Services on our nfconsole.io dashboard and click into our **dark_api_demo_service**, there is a metrics option on the top left. That will show us that our traffic is all coming from **local_desktop_endpoint**. As you add more Endpoints, you will be able to track traffic here.
+
+ The last test is to disconnect our Ziti Desktop Edge (ZDE) and try to connect again. We'll see that the address "dark.api:80" no longer exists to our network.
 
 ## NetFoundry Terminology
 ### Endpoints
