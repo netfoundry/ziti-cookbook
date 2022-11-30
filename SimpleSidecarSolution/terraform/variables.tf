@@ -1,6 +1,6 @@
 variable "service_name" {
   description = "Name to be used for ECS Service"
-  default = "dark-flask-api"
+  default = "demo-flask-api"
 }
 
 variable "region" {

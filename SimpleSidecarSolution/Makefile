@@ -1,18 +1,18 @@
-all: enroll versions tf clean
+all: enroll versions terraform clean
 
 enroll:
-	echo Enrolling /identity_token_goes_here/dark_api_endpoint.jwt. If jwt is not in the correct folder, this step will fail.
+	echo Enrolling /identity_token_goes_here/demo_api_endpoint.jwt. If jwt is not in the correct folder, this step will fail.
 	docker run --rm \
     --volume "${PWD}/identity_token_goes_here:/mnt" \
     openziti/quickstart \
-    /openziti/ziti-bin/ziti edge enroll /mnt/dark_api_endpoint.jwt
+    /openziti/ziti-bin/ziti edge enroll /mnt/demo_api_endpoint.jwt
 
 terraform:
 	terraform -chdir=./terraform init
 	terraform -chdir=./terraform apply
 
 clean:
-	rm identity_token_goes_here/dark_api_endpoint.json
+	rm identity_token_goes_here/demo_api_endpoint.json
 
 versions:
 	aws --version
