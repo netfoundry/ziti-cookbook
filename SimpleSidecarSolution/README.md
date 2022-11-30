@@ -19,6 +19,15 @@ Here are all the ingredients you'll need to cook this meal. And don't worry, we'
   - NetFoundry Teams Account (Free Tier!)
   - Ziti Desktop Edge 
 ---
+Architecture:
+
+![NetfoundrySidecarSolution](../misc/images/netfoundry_simple_sidecar_solution.png)
+
+Zero Trust Access Level:
+
+![ZTHA](../misc/images/zt_trust_level_host.png)
+
+---
 ## Prep Your Kitchen
 In order to do this demo, you will need an AWS account and permissions to create resources in that account via Terraform. You will also need a version of Terraform >=1.0.1. We suggest the latest version, as of the time of this tutorial we are using 1.3.2 https://www.terraform.io/downloads. You'll also need to ensure you have Make.
 
@@ -54,7 +63,7 @@ In order to start this recipe, you'll need to create a Teams account at [NetFoun
 
 ## Create a NetFoundry Hosted Edge Router
 
-In order to create our Zero Trust Fabric, two major components are required. At least one [Edge Router](###EdgeRouters) and a [Controller](###Controller). For simplicity of this demo, we'll just create a NetFoundry hosted Edge Router.
+In order to create our Zero Trust Fabric, two major components are required. At least one [Edge Router](###-edgerouters) and a [Controller](###Controller). For simplicity of this demo, we'll just create a NetFoundry hosted Edge Router.
 
 On your NetFoundry Console, select Edge Routers, click the + button on the top right. We'll select NetFoundry Hosted and whichever the closest location to our endpoints is. Traffic is smart routed across Edge Routers. So if you're located geographically distant from the API (i.e deployed in us-east-1 and you live in APAC), you may want to create multiple Edge Routers and test out the speed benefits. For now, we'll assume our local machine is in US EST, and our API will be deployed in us-east-1. Both AWS us-east-1 and OCI **us-ashburn-1** are located in Virginia. So we'll use that. We'll name this router **demo_edge_router** and add the attribute **dark_api_demo_router_attribute**
 

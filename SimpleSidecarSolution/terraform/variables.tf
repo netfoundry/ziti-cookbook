@@ -10,7 +10,7 @@ variable "region" {
 
 variable "api_image_url" {
     description = "URL for the containerized API you wish to deploy"
-    default = "763787222038.dkr.ecr.us-east-1.amazonaws.com/flask_api:latest"
+    default = "public.ecr.aws/x3d9o0r7/demo-flask:latest"
 }
 
 variable "api_cpu" {
