@@ -60,3 +60,9 @@ SimpleSidecarSolution:
 ## NetFoundry Teams (Free Tier)
 
 NetFoundry has created a Teams tier that is free up to 10 nodes. All examples that include this in their ingredients can be done with less than 10 nodes and can be done for free!
+
+## Ziti Communities
+
+[NetFoundry Community Discourse](https://community.netfoundry.io/)
+
+[OpenZiti Subreddit](https://www.reddit.com/r/openziti/)

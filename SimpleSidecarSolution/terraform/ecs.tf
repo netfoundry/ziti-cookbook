@@ -1,13 +1,13 @@
 // Spin up a single ECS Cluster and service with no load balancer
-resource "aws_ecs_cluster" "dark_api" {
+resource "aws_ecs_cluster" "demo_api" {
   name = "${var.service_name}-cluster"
 }
 
-resource "aws_ecs_service" "dark_api" {
+resource "aws_ecs_service" "demo_api" {
   name            = "${var.service_name}-service"
-  cluster         = aws_ecs_cluster.dark_api.id
+  cluster         = aws_ecs_cluster.demo_api.id
   launch_type     = "FARGATE"
-  task_definition = aws_ecs_task_definition.dark-api.arn
+  task_definition = aws_ecs_task_definition.demo-api.arn
   desired_count   = 1
 
   network_configuration {
@@ -16,13 +16,13 @@ resource "aws_ecs_service" "dark_api" {
     assign_public_ip = true //TODO: This fixed the Secrets Manager Issue
   }
 
-  depends_on      = [aws_iam_role.dark_api_task_execution_role]
+  depends_on      = [aws_iam_role.demo_api_task_execution_role]
 }
 
-resource "aws_ecs_task_definition" "dark-api" {
-  family = "dark-api-family"
+resource "aws_ecs_task_definition" "demo-api" {
+  family = "demo-api-family"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn = aws_iam_role.dark_api_task_execution_role.arn
+  execution_role_arn = aws_iam_role.demo_api_task_execution_role.arn
   task_role_arn =  aws_iam_role.task_role.arn
   network_mode = "awsvpc"
   cpu = 512
@@ -43,9 +43,9 @@ resource "aws_ecs_task_definition" "dark-api" {
     logConfiguration = {
       logDriver = "awslogs",
       options = {
-        awslogs-group = aws_cloudwatch_log_group.dark_api.name ,
+        awslogs-group = aws_cloudwatch_log_group.demo_api.name ,
         awslogs-region = var.region,
-        awslogs-stream-prefix = "dark_api"
+        awslogs-stream-prefix = "demo_api"
       }
     }
     },
@@ -58,9 +58,9 @@ resource "aws_ecs_task_definition" "dark-api" {
       logConfiguration = {
       logDriver = "awslogs",
       options = {
-        awslogs-group = aws_cloudwatch_log_group.dark_api.name ,
+        awslogs-group = aws_cloudwatch_log_group.demo_api.name ,
         awslogs-region = var.region,
-        awslogs-stream-prefix = "dark_api"
+        awslogs-stream-prefix = "demo_api"
       }
     }
     }
@@ -69,6 +69,6 @@ resource "aws_ecs_task_definition" "dark-api" {
 
 
 // Creates the log group for fargate logs
-resource "aws_cloudwatch_log_group" "dark_api" {
+resource "aws_cloudwatch_log_group" "demo_api" {
   name = "/ecs/fargate_log_group"
 }
