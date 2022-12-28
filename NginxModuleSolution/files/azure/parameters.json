@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "dnsPrefix": {
+            "value": "akssand"
+        },
+        "kubernetesVersion": {
+            "value": "1.23.12"
+        },
+        "localAddressPrefixes": {
+            "value": ["10.17.0.0/16"]
+        },
+        "serviceCidr": {
+            "value": "10.17.0.0/24"
+        },
+        "dnsServiceIP": {
+            "value": "10.17.0.10"
+        },
+        "appCidr": {
+            "value": "10.17.1.0/24"
+        }
+    }
+}

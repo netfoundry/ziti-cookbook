@@ -55,3 +55,4 @@ Thumbs.db
 # Ignoring identity tokens
 SimpleSidecarSolution/identity_token_goes_here/*.jwt
 SimpleSidecarSolution/identity_token_goes_here/*.json
+**/*.jwt
