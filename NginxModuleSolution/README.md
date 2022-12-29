@@ -14,7 +14,7 @@ Here are all the ingredients you'll need to cook this meal.
   - This Repo!
   - Azure Subscription, Resource Group and CLI Access
   - [OpenZiti Nginx Module Repo](https://github.com/openziti/ngx_ziti_module)
-  - [OpenZiti Golang SDK Repo](https://github.com/openziti/sdk-golang)
+  - [OpenZiti Zitified Kubeztl Repo](https://github.com/dariuszSki/kubeztl)
   - [Go installed on the client](https://go.dev/doc/install) - v1.19 or later
   - NetFoundry Teams Account (Free Tier!)
 ---
@@ -28,7 +28,7 @@ Here are all the ingredients you'll need to cook this meal.
 
 ---
 ## Prep Your Kitchen
-In order to do this demo, you will need an Azure account and permissions to create resources in that account via ARM Templates. You will also need a version of [Azure Cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli). We suggest the latest version.
+In order to do this demo, you will need an Azure account and permissions to create resources in that account via ARM Templates. You will also need a version of [Azure Cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli). You will need [Go installed](https://go.dev/doc/install) as well. We suggest the latest versions.
 Let's run quick commands to ensure we have everything we need installed:
 ```
 > az version
@@ -38,9 +38,12 @@ Let's run quick commands to ensure we have everything we need installed:
   "azure-cli-telemetry": "1.0.8",
   "extensions": {}
 }
+
+> go version
+go version go1.19.1 windows/amd64
 ```
 
-Once you're sure you have proper permissions in Azure and you have a compatible version of Azure Cli, go ahead and clone this repo.
+Once you're sure you have proper permissions in Azure and you have a compatible version of Azure Cli and Go, go ahead and clone this repo.
 
 ---
 
@@ -55,7 +58,7 @@ All you need is `name=network-nginx-demo` and region to deploy a network.
 
 ![NetworkCreate](../misc/images/create_network_nginx.png)
 
-Once the network is up (i.e. network controller only), navigate to edge router page and click on the help message at the bottom of the page. Enter an address that matches the region you provided in the previous step. 
+Once the network is up (i.e. network controller only), navigate to the edge router page and click on the help message at the bottom of the page. Enter an address that matches the region you provided in the previous step and the fabric, i.e. 2 Public Edge Routers, will be deployed for you along with the Edge Router Policy.
 
 ![FabricCreate](../misc/images/create_fabric.png)
 
@@ -217,6 +220,8 @@ If you get the error as shown above, then the client app was built successfully.
 
 ## Enroll Client App Identity
 
+***Note: If your are using a linux client, you can follow the same commands as described for the nginx module above in [the previous step](#enroll-nginx-module-identity).***
+
 `````powershell
 # Install Ziti Cli on Windows using powershell
 wget $($(Invoke-RestMethod -uri https://api.github.com/repos/openziti/ziti/releases/latest).assets |  where-object { $_.name -match "windows"}).browser_download_url -UseBasicParsing -OutFile $($(Invoke-RestMethod -uri https://api.github.com/repos/openziti/ziti/releases/latest).assets |  where-object { $_.name -match "windows"}).name
@@ -235,9 +240,9 @@ rm $($(Invoke-RestMethod -uri https://api.github.com/repos/openziti/ziti/release
 
 In order for your Nginx Module to be recognized on the fabric, it must be hosted as a [Service](#service).
 
-For this, we'll create a Simple Service. On the nfconsole.io dashboard, select Services and the + on the top right. Then select Simple Service and Create Service. We'll name the service `nginx-service-01` and give it the service attribute `nginx-services` and leave the edge router attributes as default.
+For this, we'll create a Simple Service. On the nfconsole.io dashboard, select Services and the + on the top right. Then select `Simple Service` and Create Service. We'll name the service `nginx-service-01` and give it the service attribute `nginx-services` and leave the edge router attributes as default.
 
-This service will be hosted on the sdk embedded endpoint, i.e nginx module. Thus, intercept host information is irrelevent in our case, but it needs to be filled in the current UI version. Use `name=none.io, port 1`and enter `#servers` group tag in the hosted endpoints field. Select `Yes` to choose Native Application SDK Based Option.
+This service will be hosted on the sdk embedded endpoint, i.e nginx module. Thus, intercept host information is irrelevent in our case, but it needs to be filled in the current UI version. Use `name=none.io, port 1` and enter `#servers` group tag in the hosted endpoints field. Select `Yes` to choose Native Application SDK Based Option.
 
 ![createService](../misc/images/create_service_nginx.png)
 
@@ -253,7 +258,7 @@ As mentioned before, in order to allow our local Endpoint `(kubeztl)` to access 
 
 Everything should be connected as expected now. Let's look again to ensure everything is as expected.
 
-Now our event history should look as follows: 
+Now the event history should look as follows: 
 
 ![managementEvents](../misc/images/management_events_nginx.png)
 
