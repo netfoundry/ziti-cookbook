@@ -292,8 +292,39 @@ ERROR   Service Name not provided # if we dont provide ziti service name and ide
 build/kubeztl get nodes --zConfig ../client-nginx.json --service nginx-service-01
 NAME                                STATUS   ROLES   AGE    VERSION
 aks-agentpool-26146717-vmss000000   Ready    agent   153m   v1.23.12
+
+build/kubeztl cluster-info --zConfig ../client-nginx.json --service nginx-service-01
+Kubernetes control plane is running at https://akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io:443
+addon-http-application-routing-nginx-ingress is running at http://20.246.189.101:80 http://20.246.189.101:443
+CoreDNS is running at https://akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+Metrics-server is running at https://akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io:443/api/v1/namespaces/kube-system/services/https:metrics-server:/proxy
 `````
 ***Dark Access enabled !!!***
+
+## Another test if you are up for it!
+To acces this app once deployed, you can follow [the sidecar receipe](../SimpleSidecarSolution/README.md)
+
+`````bash
+# Deploying Helloworld App.
+
+build/kubeztl  --zConfig ../client-nginx.json --service nginx-service-01 apply -f ..\ziti-cookbook\NginxModuleSolution\files\templates\helloworld.yaml
+deployment.apps/helloworld created
+
+build/kubeztl  get pods --zConfig ../client-nginx.json --service nginx-service-01
+NAME                         READY   STATUS    RESTARTS   AGE
+helloworld-ff5c98fbf-xq5w2   1/1     Running   0          2m11s
+
+build/kubeztl  --zConfig ../client-nginx.json --service nginx-service-01 get pods -o wide
+NAME                         READY   STATUS    RESTARTS   AGE     IP           NODE                                NOMINATED NODE   READINESS GATES
+helloworld-ff5c98fbf-xq5w2   1/1     Running   0          4m36s   10.17.1.16   aks-agentpool-26146717-vmss000000   <none>           <none>
+
+# Deleting Helloworld App
+build/kubeztl  delete deployment helloworld --zConfig ../client-nginx.json --service nginx-service-01
+deployment.apps "helloworld" deleted
+
+build/kubeztl  --zConfig ../client-nginx.json --service nginx-service-01 get pods -o wide
+No resources found in default namespace.
+`````
 
 ---
 
