@@ -14,7 +14,7 @@ Here are all the ingredients you'll need to cook this meal.
   - This Repo!
   - Azure Subscription, Resource Group and CLI Access
   - [OpenZiti Nginx Module Repo](https://github.com/openziti/ngx_ziti_module)
-  - [OpenZiti Zitified Kubeztl Repo](https://github.com/dariuszSki/kubeztl)
+  - [OpenZiti Zitified Kubeztl Repo](https://github.com/openziti-test-kitchen/kubeztl)
   - [Go installed on the client](https://go.dev/doc/install) - v1.19 or later
   - NetFoundry Teams Account (Free Tier!)
 ---
@@ -202,8 +202,10 @@ cat /var/log/nginx/error.log
 
 `````powershell
 # Clone Kubectl Repo on your client
-git clone https://github.com/dariuszSki/kubeztl.git; cd kubeztl;
+git clone https://github.com/openziti-test-kitchen/kubeztl; cd kubeztl;
 mkdir build
+go mod init kubeztl
+go mod tidy
 go build -o build ./...
 
 # Test Client app - kubeztl
