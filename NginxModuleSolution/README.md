@@ -86,38 +86,38 @@ You will need to set a few environmental variables. Deploy infrastructure by run
 ```bash
 Linux Client
 
-export LOCATION='eastus' # preferably one that does not have any infrastructure
-export SUB_ID='xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-export RG_NAME='resource group name' # preferably a new one for easy clean up after demo
-export SSH_PKEY='ssh public key'
+export ARM_SUBSCRIPTION_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export ARM_CLIENT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+export ARM_CLIENT_SECRET="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+export ARM_TENANT_ID="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 Windows Client
 
-$env:LOCATION = 'eastus'
-$env:SUB_ID = 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-$env:RG_NAME = 'resource group name'
-$env:SSH_PKEY = 'ssh public key'
+$env:ARM_SUBSCRIPTION_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+$env:ARM_CLIENT_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+$env:ARM_CLIENT_SECRET = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+$env:ARM_TENANT_ID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-az login --use-device-code # using web browser if you don't have service principal access set up
-az login --service-principal -u $APP_ID -p $CLIENT_SECRET --tenant $TENANT_ID
-
-git clone https://github.com/netfoundry/ziti-cookbook.git; cd ziti-cookbook/NginxModuleSolution/
-
-az deployment group create --name daksdeploy$LOCATION --subscription $SUB_ID --resource-group $RG_NAME --template-file files/azure/template.json --parameters files/azure/parameters.json -p location=$LOCATION acrResourceGroup=$RG_NAME adminPublicKey="$SSH_PKEY"
+git clone https://github.com/netfoundry/ziti-cookbook.git
+cd ziti-cookbook/NginxModuleSolution/terraform/tf-provider
+terraform init
+terraform plan -out aks
+terraform apply "aks"
 ```
-Wait for resources to be deployed successfully... Once completed, grab the AKS API FQDN and Nginx Server IP under "outputs" in the generated response as shown in the example below.
+Wait for resources to be deployed successfully...
+
+Once completed, grab  `cluster_private_fqdn` and `nginx_public_ip_address` under `outputs` as shown in the example below.
 
 ```bash
-"outputs": {
-      "aksApiFQDN": {
-        "type": "String",
-        "value": "akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io"
-      },
-      "nginxName1": {
-        "type": "String",
-        "value": "4.227.217.18"
-      }
-    },
+Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+cluster_name = "akssandeastus"
+cluster_private_fqdn = "akssand-e3b5e367.97690473-9b65-433e-aa79-76cc7685d852.privatelink.eastus.azmk8s.io"
+nginx_public_ip_address = [
+"172.174.95.189",
+]
 ```
 
 ---
@@ -125,15 +125,16 @@ Wait for resources to be deployed successfully... Once completed, grab the AKS A
 ## Build and Deploy Nginx Ziti Module
 `````bash
 # Upload `nginx-server.jwt` file to the nginx server.
-scp -i "ssh private key" files/identity_tokens/server-nginx.jwt ziggy@<nginx_server_public_ip>:
+scp -i "ssh private key" ../../files/identity_tokens/server-nginx.jwt ziggy@${nginx_public_ip_address}:
 
 # Login to Nginx Server host using ssh.
-ssh -i "ssh private key" ziggy@<nginx_server_public_ip>
+ssh -i "ssh private key" ziggy@${nginx_public_ip_address}
 
-# Update all existing and add essentials packages for the build process
+# Important Note: The package updates listed in the next code snippet will be performed by the cloud-init script. They are posted here just incase they are not executed during the initial boot-up for any reason. You can skip the next step and only come back to it if "Build the module" step fails due to packages not present.
+
+# Update all existing and add essentials packages for the build process. Note: May need to click ok on messages during the install to leave current defaults on
 sudo apt update && sudo apt upgrade -y 
 sudo apt install libpcre3-dev libz-dev libuv1-dev cmake build-essential jq -y
-# May need to click ok on messages, leave defaults on
 sudo reboot
 
 #Build the module
@@ -143,16 +144,21 @@ make
 
 #Relocate the module to the Nginx's modules folder
 sudo cp ngx_ziti_module.so /etc/nginx/modules/
+ls /etc/nginx/modules/
+ngx_ziti_module.so
 
-# Enable the ziti module in the configuration file. Just replace the existing content with the following data. Dont forget to replace the fqdn with your own.
-# Note: The identity path points to the nginx directory. You will move the identiy file there after it is enrolled.
+# To enable the ziti module in the configuration file, run the command as shown in the the next code block to replace the existing content. 
+# Important Note: The identity path points to the nginx directory. The identiy file will be moved there after it is enrolled. Don't forget to replace ${cluster_private_fqdn} with your own.
+
 sudo tee /etc/nginx/nginx.conf << EOF
+
 load_module modules/ngx_ziti_module.so;
 
 user  nginx;
 worker_processes  auto;
 
 error_log  /var/log/nginx/error.log debug;
+pid        /var/run/nginx.pid;
 
 thread_pool ngx_ziti_tp threads=32 max_queue=65536;
 
@@ -166,6 +172,26 @@ ziti identity1 {
     bind nginx-service-01 {
         upstream akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io:443;
     }
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
 }
 EOF
 `````
@@ -202,6 +228,7 @@ cat /var/log/nginx/error.log
 
 `````powershell
 # Clone Kubectl Repo on your client
+# Note: May need to install gcc compiler on windows tdm-gcc
 git clone https://github.com/openziti-test-kitchen/kubeztl; cd kubeztl;
 mkdir build
 go mod init kubeztl
@@ -210,11 +237,22 @@ go build -o build ./...
 
 # Test Client app - kubeztl
 build/kubeztl version -o json 
-# Response with no service name provided                                                                    
-ERROR   Service Name not provided
-# Response with no identity configuration file provided 
-build/kubeztl get nodes --zConfig= --service=nginx-service-01
-ERROR   Loading Ziti Identity Config File
+ERROR failure to post auth Post "https://b5767e83-dd46-42f7-bb80-32712f35bfe8.production.netfoundry.io:443/edge/client/v1/authenticate?method=cert": dial tcp: lookup b5767e83-dd46-42f7-bb80-32712f35bfe8.production.netfoundry.io: no such host
+{
+"clientVersion": {
+"major": "",
+"minor": "",
+"gitVersion": "v0.0.0-master+$Format:%H$",
+"gitCommit": "$Format:%H$",
+"gitTreeState": "",
+"buildDate": "1970-01-01T00:00:00Z",
+"goVersion": "go1.19.1",
+"compiler": "gc",
+"platform": "windows/amd64"
+},
+"kustomizeVersion": "v4.5.7"
+}
+Unable to connect to the server: failed to dial: no apiSession, authentication attempt failed: Post "https://b5767e83-dd46-42f7-bb80-32712f35bfe8.production.netfoundry.io:443/edge/client/v1/authenticate?method=cert": dial tcp: lookup b5767e83-dd46-42f7-bb80-32712f35bfe8.production.netfoundry.io: no such host
 `````
 If you get the error as shown above, then the client app was built successfully.
 
