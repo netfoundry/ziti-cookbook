@@ -56,3 +56,4 @@ Thumbs.db
 SimpleSidecarSolution/identity_token_goes_here/*.jwt
 SimpleSidecarSolution/identity_token_goes_here/*.json
 **/*.jwt
+NginxModuleSolution/files/identity_tokens/*.json
