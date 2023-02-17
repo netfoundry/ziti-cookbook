@@ -13,6 +13,7 @@ Here are all the ingredients you'll need to cook this meal.
 - Ingredients
   - This Repo!
   - Azure Subscription, Resource Group and CLI Access
+  - [Terraform installed](https://developer.hashicorp.com/terraform/downloads)
   - [OpenZiti Nginx Module Repo](https://github.com/openziti/ngx_ziti_module)
   - [OpenZiti Zitified Kubeztl Repo](https://github.com/openziti-test-kitchen/kubeztl)
   - [Go installed on the client](https://go.dev/doc/install) - v1.19 or later
@@ -28,7 +29,7 @@ Here are all the ingredients you'll need to cook this meal.
 
 ---
 ## Prep Your Kitchen
-In order to do this demo, you will need an Azure account and permissions to create resources in that account via ARM Templates. You will also need a version of [Azure Cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli). You will need [Go installed](https://go.dev/doc/install) as well. We suggest the latest versions.
+In order to do this demo, you will need an Azure account and permissions to create resources in that account via Terraform. You will also need a version of [Azure Cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli). You will need [Go installed](https://go.dev/doc/install) and [terraform](https://developer.hashicorp.com/terraform/downloads) as well. We suggest the latest versions.
 Let's run quick commands to ensure we have everything we need installed:
 ```
 > az version
@@ -41,9 +42,12 @@ Let's run quick commands to ensure we have everything we need installed:
 
 > go version
 go version go1.19.1 windows/amd64
+
+> terraform --version
+Terraform v1.3.9
 ```
 
-Once you're sure you have proper permissions in Azure and you have a compatible version of Azure Cli and Go, go ahead and clone this repo.
+Once you're sure you have proper permissions in Azure and you have a compatible version of Azure Cli, Terraform and Go, go ahead and clone this repo.
 
 ---
 
@@ -77,8 +81,7 @@ To create endpoints, navigate to `Endpoints` in the navigation pannel to the lef
 Now that we have the enrollment tokens for Nginx Module and Client Go Apps, we can go ahead and deploy the infrustructure in Azure using the ARM Templates. The templates included in this project will create the following resources (and their associated resources):
 
 - Virtual Network
-- AKS Private Cluster with Azure CNI
-- Container Registry
+- AKS Private Cluster with kubenet CNI
 - Nginx Server
 - Security Group with only SSH port open to Internet
 
@@ -142,13 +145,13 @@ git clone https://github.com/openziti/ngx_ziti_module.git; cd ngx_ziti_module/; 
 cmake ../
 make
 
-#Relocate the module to the Nginx's modules folder
+#Copy the module to the Nginx's modules folder
 sudo cp ngx_ziti_module.so /etc/nginx/modules/
 ls /etc/nginx/modules/
 ngx_ziti_module.so
 
 # To enable the ziti module in the configuration file, run the command as shown in the the next code block to replace the existing content. 
-# Important Note: The identity path points to the nginx directory. The identiy file will be moved there after it is enrolled. Don't forget to replace ${cluster_private_fqdn} with your own.
+# Important Note: The identity path points to the nginx directory. The identiy file will be moved there after it is enrolled. Don't forget to replace ${cluster_private_fqdn} with your own. Also, the http configuration block is the default configuration that comes with nginx. One can try to access port 80 from the internet to test if it is exposed or not, i.e. curl http://${nginx_public_ip_address}.
 
 sudo tee /etc/nginx/nginx.conf << EOF
 
@@ -170,7 +173,7 @@ ziti identity1 {
     identity_file /etc/nginx/server-nginx.json;
 
     bind nginx-service-01 {
-        upstream akssand-2887a9f2.eb3aa8fb-333a-47c3-b657-61035c4c4f98.privatelink.eastus.azmk8s.io:443;
+        upstream ${cluster_private_fqdn}:443;
     }
 }
 
@@ -313,12 +316,12 @@ We will use our zitified kubectl client to interact with the AKS API Controll Pl
 az login # if not already logged in
 # Windows
 $env:RG_NAME = 'resource group name'
-$env:SUB_ID =  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-az aks get-credentials --resource-group $env:RG_NAME --name {myAKSCluster} --subscription $env:SUB_ID
+$env:ARM_SUBSCRIPTION_ID =  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+az aks get-credentials --resource-group $env:RG_NAME --name {cluster_name} --subscription $env:ARM_SUBSCRIPTION_ID
 # Linux
 $RG_NAME = 'resource group name'
-$SUB_ID =  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
-az aks get-credentials --resource-group $RG_NAME --name {myAKSCluster} --subscription $SUB_ID
+$ARM_SUBSCRIPTION_ID =  'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+az aks get-credentials --resource-group $RG_NAME --name {cluster_name} --subscription $ARM_SUBSCRIPTION_ID
 
 # Change directory to kubeztl and check the installed context in the kubectl config file
 cd kubeztl
