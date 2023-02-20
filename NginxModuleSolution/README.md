@@ -20,7 +20,7 @@ Here are all the ingredients you'll need to cook this meal.
   - NetFoundry Teams Account (Free Tier!)
 ---
 ## Architecture:
-![NetFoundryApiGatewaySolution](../misc/images/nginx_module_arch.png)
+![NetFoundryApiGatewaySolution](../misc/images/nginx_module_arch.svg)
 
 ## Zero Trust Access Level:
 ---
