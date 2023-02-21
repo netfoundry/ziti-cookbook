@@ -15,8 +15,9 @@ Check out one of our recipes now if you know what you want to make, or continue 
 
 | Recipe | Technologies |
 | ------ | ----- |
-| [SimpleSidecarSolution](SimpleSidecarSolution/README.md)| AWS Fargate, Netfoundy, Terraform |
+| [SimpleSidecarSolution](SimpleSidecarSolution/README.md)| AWS Fargate, NetFoundry, Terraform |
 | [BYOCertificateAuthority](BYOCertificateAuthority/README.md)| AWS Fargate, AWS Private CA, Netfoundy, Terraform |
+| [NginxModuleSolution](NginxModuleSolution/README.md)| Azure AKS, NetFoundry, ARM Templates, Go and C SDKs |
 | ------ | ----- |
 
 ## What is OpenZiti?
